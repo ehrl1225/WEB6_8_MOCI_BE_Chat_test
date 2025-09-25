@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
               <ThemeToggleButton />
             </div>
             {children}
+            <Toaster richColors />
           </div>
         </ThemeProvider>
       </body>
