@@ -28,7 +28,7 @@ export default function LoginPage({onLoginSuccess}: {onLoginSuccess: (id:string)
 
     const handleLogin = async () => {
         console.log({id, password});
-        const response = await fetch("http://localhost:8080/api/v1/auth/token", {
+        const response = await fetch("http://localhost:8080/api/v1/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
