@@ -4,15 +4,51 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { use, useState } from "react"
 
-export default function LoginPage(){
+type LoginResponse = {
+    ok: boolean,
+    data: {
+        user: {
+            id: number,
+            userId: string,
+            socialId: string,
+            name: string,
+            email: string,
+            role: string,
+            digitalLevel: number,
+            createdAt: string
+        }
+    }
+}
+
+export default function LoginPage({onLoginSuccess}: {onLoginSuccess: (id:string) => void}) {
     const [id, setId] = useState("")
     const [password, setPassword] = useState("")
 
-    const handleLogin = () => {
-        console.log({id, password})
+    const handleLogin = async () => {
+        console.log({id, password});
+        const response = await fetch("http://localhost:8080/api/v1/auth/token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                loginType: "PHONE",
+                userId:id,
+                password:password
+            }),
+            credentials: "include"
+        });
+        if (!response.ok) {
+            console.log("Login failed");
+            return;
+        }
+        const responseData: LoginResponse = await response.json();
         
+        onLoginSuccess(responseData.data.user.name);
+        setId("");
+        setPassword("");
     }
 
     return <div className="flex justify-center items-center h-screen bg-gray-100 dark:bg-gray-900">

@@ -11,9 +11,11 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
-export default function ChatPage() {
+const NO_ATTACHMENT = 0
+
+export default function ChatPage({sender}: {sender: string}) {
     const [connectionStatus, setConnectionStatus] = useState("Disconnected")
-    const [sender, setSender] = useState("")
+    const [roomId, setRoomId] = useState("1") // Room ID 상태 추가
     const [text, setText] = useState("")
     const [messages, setMessages] = useState<{ sender: string, content: string }[]>([])
     const clientRef = useRef<Client | null>(null)
@@ -37,6 +39,10 @@ export default function ChatPage() {
     }, [])
 
     const connect = () => {
+        if (!roomId.trim()) {
+            toast.warning("Please enter a Room ID.")
+            return
+        }
         setConnectionStatus("Connecting...")
         toast.info("Connecting to the server...")
         const client = new Client({
@@ -45,12 +51,16 @@ export default function ChatPage() {
             reconnectDelay: 0, // 자동 재연결 방지
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
+            connectHeaders: {
+                roomId: roomId // 상태에서 Room ID 사용
+            }
         })
 
         client.onConnect = (frame) => {
             setConnectionStatus("Connected")
-            toast.success("Connected to the server!")
-            client.subscribe("/api/v1/chat/topic/1", (message) => {
+            toast.success(`Connected to room ${roomId}!`)
+            // 상태에서 Room ID를 사용하여 토픽 구독
+            client.subscribe(`/api/v1/chat/topic/${roomId}`, (message) => {
                 const receivedMessage = JSON.parse(message.body)
                 setMessages((prevMessages) => [...prevMessages, receivedMessage])
             })
@@ -68,7 +78,9 @@ export default function ChatPage() {
             setConnectionStatus(prevStatus => {
                 if (prevStatus === 'Connected') {
                     toast.info("Disconnected from the server.");
+                    setConnectionStatus('Disconnected'); // 상태를 즉시 리셋
                 }
+                clientRef.current?.deactivate();
                 return 'Disconnected';
             });
         }
@@ -88,13 +100,14 @@ export default function ChatPage() {
     }
 
     const sendMessage = () => {
-        if (clientRef.current && clientRef.current.connected && text.trim() !== "" && sender.trim() !== "") {
-            const message = { 
-                sender:sender, 
-                content:text 
+        if (clientRef.current && clientRef.current.connected && text !== "" && sender !== "") {
+            const message = {  
+                content:text,
+                attachmentId:NO_ATTACHMENT
             }
+            // 상태에서 Room ID를 사용하여 메시지 전송
             clientRef.current.publish({
-                destination: "/api/v1/chat/app/send/1",
+                destination: `/api/v1/chat/app/send/${roomId}`,
                 body: JSON.stringify(message),
             })
             setText("")
@@ -102,6 +115,8 @@ export default function ChatPage() {
             toast.warning("Please enter a sender name.")
         } else if (!clientRef.current || !clientRef.current.connected) {
             toast.error("STOMP client is not connected.")
+            setConnectionStatus("Disconnected")
+            clientRef.current?.deactivate()
         }
     }
 
@@ -116,6 +131,17 @@ export default function ChatPage() {
             <Card className="w-full max-w-2xl h-[80vh] flex flex-col">
                 <CardHeader>
                     <CardTitle>STOMP Chat</CardTitle>
+                    <div className="grid gap-1.5 mt-4">
+                        <Label htmlFor="roomId">Room ID</Label>
+                        <Input
+                            id="roomId"
+                            type="number"
+                            placeholder="Enter Room ID"
+                            value={roomId}
+                            onChange={(e) => setRoomId(e.target.value)}
+                            disabled={['Connected', 'Connecting...'].includes(connectionStatus)}
+                        />
+                    </div>
                     <div className="flex items-center justify-between mt-2">
                         <CardDescription>Connection Status: {connectionStatus}</CardDescription>
                         <div className="flex gap-2">
@@ -144,7 +170,7 @@ export default function ChatPage() {
                                 id="sender"
                                 placeholder="Your Name"
                                 value={sender}
-                                onChange={(e) => setSender(e.target.value)}
+                                disabled={true}
                                 className="w-full"
                             />
                              <Label htmlFor="message" className="sr-only">Message</Label>
