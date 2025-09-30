@@ -40,10 +40,15 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
         sendMessage(text, roomId);
     }
 
+    const toLoginPage = () => {
+        setLoggedIn(false);
+        disconnect();
+    }
+
     return (
         <div className="flex flex-col justify-center items-center h-screen bg-gray-100 dark:bg-gray-900 px-4">
             <div className="w-full max-w-2xl mb-4">
-                <Button variant={"ghost"} className="flex items-center gap-1 text-sm text-muted-foreground hover:underline" onClick={() => setLoggedIn(false)}>
+                <Button variant={"ghost"} className="flex items-center gap-1 text-sm text-muted-foreground hover:underline" onClick={toLoginPage}>
                     <ChevronLeft className="h-4 w-4" />
                     로그인으로 돌아가기
                 </Button>
