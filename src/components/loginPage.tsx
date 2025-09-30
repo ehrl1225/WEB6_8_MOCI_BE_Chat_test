@@ -5,50 +5,20 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { use, useState } from "react"
+import { toast } from "sonner"
 
-type LoginResponse = {
-    ok: boolean,
-    data: {
-        user: {
-            id: number,
-            userId: string,
-            socialId: string,
-            name: string,
-            email: string,
-            role: string,
-            digitalLevel: number,
-            createdAt: string
-        }
-    }
-}
-
-export default function LoginPage({onLoginSuccess}: {onLoginSuccess: (id:string) => void}) {
+export default function LoginPage({login}: {login: (id:string, password:string) => Promise<boolean>}) {
     const [id, setId] = useState("")
     const [password, setPassword] = useState("")
 
     const handleLogin = async () => {
-        console.log({id, password});
-        const response = await fetch("http://localhost:8080/api/v1/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                loginType: "PHONE",
-                userId:id,
-                password:password
-            }),
-            credentials: "include"
-        });
-        if (!response.ok) {
-            console.log("Login failed");
+        const success = await login(id, password);
+        if (!success) {
             return;
         }
-        const responseData: LoginResponse = await response.json();
-        
-        onLoginSuccess(responseData.data.user.name);
         setId("");
         setPassword("");
+        toast.success("Login successful!");
     }
 
     return <div className="flex justify-center items-center h-screen bg-gray-100 dark:bg-gray-900">
