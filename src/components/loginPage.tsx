@@ -33,7 +33,7 @@ export default function LoginPage({login}: {login: (id:string, password:string) 
                 </div>
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" placeholder="비밀번호를 입력해 주세요." value={password} onChange={(e) => setPassword(e.target.value)}></Input>
+                    <Input id="password" type="password" placeholder="비밀번호를 입력해 주세요." value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e)=>e.key === "Enter" && handleLogin()}></Input>
                 </div>
                 <div>
                     <Button onClick={handleLogin}>로그인</Button>

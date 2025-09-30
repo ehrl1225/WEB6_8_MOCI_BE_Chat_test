@@ -96,8 +96,9 @@ export default function useChat(){
             }
             // 상태에서 Room ID를 사용하여 메시지 전송
             clientRef.current.publish({
-                destination: `/api/v1/chat/app/send/${roomId}`,
+                destination: `/api/v1/chat/app/send`,
                 body: JSON.stringify(message),
+                headers: { roomId: roomId }
             })
         } else if (!clientRef.current || !clientRef.current.connected) {
             toast.error("STOMP client is not connected.")

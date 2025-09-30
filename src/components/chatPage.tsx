@@ -35,6 +35,11 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
         }
     }, [])
 
+    const onSendMessage = () =>{
+        setText("");
+        sendMessage(text, roomId);
+    }
+
     return (
         <div className="flex flex-col justify-center items-center h-screen bg-gray-100 dark:bg-gray-900 px-4">
             <div className="w-full max-w-2xl mb-4">
@@ -94,11 +99,11 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
                                 placeholder="Type your message..."
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && sendMessage(text, roomId)}
+                                onKeyDown={(e) => e.key === 'Enter' && onSendMessage()}
                                 className="w-full"
                             />
                         </div>
-                        <Button onClick={() => sendMessage(text, roomId)} className="self-end">Send</Button>
+                        <Button onClick={onSendMessage} className="self-end">Send</Button>
                     </div>
                 </CardFooter>
             </Card>
