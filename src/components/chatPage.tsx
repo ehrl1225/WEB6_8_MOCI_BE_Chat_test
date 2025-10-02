@@ -5,14 +5,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEffect, useState, useRef } from "react"
-import { Client } from "@stomp/stompjs"
-import SockJS from "sockjs-client"
-import { toast } from "sonner"
-import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import useChat from "@/lib/useChat"
 
-const NO_ATTACHMENT = 0
 
 export default function ChatPage({sender, setLoggedIn}: {sender: string, setLoggedIn: (loggedIn: boolean) => void}) {
     const [roomId, setRoomId] = useState("1") // Room ID 상태 추가
@@ -32,6 +27,9 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
     useEffect(() => {
         if (clientRef.current) {
             clientRef.current.deactivate()
+        }
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
         }
     }, [])
 
@@ -70,7 +68,7 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
                     <div className="flex items-center justify-between mt-2">
                         <CardDescription>Connection Status: {connectionStatus}</CardDescription>
                         <div className="flex gap-2">
-                            <Button onClick={() => connect(roomId)} disabled={['Connected', 'Connecting...'].includes(connectionStatus)}>Connect</Button>
+                            <Button id="connect" onClick={() => connect(roomId)} disabled={['Connected', 'Connecting...'].includes(connectionStatus)}>Connect</Button>
                             <Button onClick={disconnect} disabled={['Disconnected', 'Error'].includes(connectionStatus)} variant="destructive">Disconnect</Button>
                         </div>
                     </div>
@@ -79,7 +77,7 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
                     <div className="flex flex-col gap-4">
                         {messages.map((msg, index) => (
                             <div key={index} className={`flex ${msg.sender === sender ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`px-4 py-2 rounded-lg ${msg.sender === sender ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                <div className={`px-4 py-2 rounded-lg ${msg.sender === sender ? 'bg-blue-500 text-white me' : 'bg-gray-200 dark:bg-gray-700 other'} `}>
                                     <strong>{msg.sender}:</strong> {msg.content}
                                 </div>
                             </div>
@@ -108,7 +106,7 @@ export default function ChatPage({sender, setLoggedIn}: {sender: string, setLogg
                                 className="w-full"
                             />
                         </div>
-                        <Button onClick={onSendMessage} className="self-end">Send</Button>
+                        <Button id="send" onClick={onSendMessage} disabled={connectionStatus == "Disconnected"} className="self-end">Send</Button>
                     </div>
                 </CardFooter>
             </Card>

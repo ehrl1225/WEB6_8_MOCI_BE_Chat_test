@@ -2,6 +2,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { LoginResponse } from "./types";
 
+const URL = "http://localhost:8080"
+
 export default function useLogin(){
   const [loggedIn, setLoggedIn] = useState(false);
   const [name, setName] = useState("");
@@ -13,7 +15,7 @@ export default function useLogin(){
 
   const login = async (id:string, password:string) => {
         console.log({id, password});
-        const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+        const response = await fetch(`${URL}/api/v1/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
